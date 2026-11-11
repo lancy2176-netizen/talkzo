@@ -4,7 +4,7 @@
  * Example for India: 919876543210
  */
 export const siteConfig = {
-  brandName: 'FlutterFix',
-  whatsappNumber: '',
-  supportEmail: '',
+  brandName: 'Talkzo',
+  whatsappNumber: '+918848055651',
+  supportEmail: 'support@talkzo.in',
 };

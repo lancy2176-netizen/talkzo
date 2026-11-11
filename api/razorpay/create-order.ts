@@ -13,13 +13,25 @@ export async function POST(request: Request): Promise<Response> {
   if (!keys) return jsonResponse(request, { error: 'Razorpay server credentials are not configured.' }, 503);
 
   try {
+    const body = await request.json() as { productId?: string };
+    const prices: Record<string, number> = {
+      portfolio: 35,
+      'student-lms': 75,
+      'groone-crm': 55,
+      'delivery-admin': 65,
+      'booking-cart': 49,
+    };
+    const productId = String(body.productId || '');
+    const price = prices[productId];
+    if (!price) return jsonResponse(request, { error: 'Choose a valid product before checkout.' }, 400);
+
     const upstream = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
         Authorization: `Basic ${Buffer.from(`${keys.keyId}:${keys.keySecret}`).toString('base64')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ amount: 99900, currency: 'INR', receipt: `flutterfix_${Date.now()}` }),
+      body: JSON.stringify({ amount: price * 100, currency: 'INR', receipt: `talkzo_${productId}_${Date.now()}` }),
     });
     const order = await upstream.json() as { id?: string; amount?: number; currency?: string; error?: { description?: string } };
     if (!upstream.ok || !order.id) {

@@ -18,6 +18,8 @@ type RazorpayOrder = {
   error?: string;
 };
 
+type CheckoutProduct = { id: string; name: string; price: number };
+
 type CheckoutOptions = {
   key: string;
   amount: number;
@@ -84,8 +86,12 @@ async function loadCheckout(): Promise<void> {
   });
 }
 
-async function createOrder(): Promise<Required<Pick<RazorpayOrder, 'orderId' | 'amount' | 'currency' | 'keyId'>>> {
-  const response = await fetch(createOrderUrl, { method: 'POST' });
+async function createOrder(productId: string): Promise<Required<Pick<RazorpayOrder, 'orderId' | 'amount' | 'currency' | 'keyId'>>> {
+  const response = await fetch(createOrderUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId }),
+  });
   const order = await readJson<RazorpayOrder>(response);
   if (!response.ok || !order.orderId || !order.amount || !order.currency || !order.keyId) {
     throw new Error(order.error || 'The server could not create a Razorpay order.');
@@ -106,9 +112,9 @@ async function verifyPayment(payment: PaymentResponse): Promise<void> {
 }
 
 /** Creates an order on the server, opens Standard Checkout, and verifies its callback. */
-export async function startRazorpayCheckout(brandName: string): Promise<PaymentOutcome> {
+export async function startRazorpayCheckout(brandName: string, product: CheckoutProduct): Promise<PaymentOutcome> {
   await loadCheckout();
-  const order = await createOrder();
+  const order = await createOrder(product.id);
   const Razorpay = window.Razorpay;
   if (!Razorpay) throw new Error('Razorpay Checkout is unavailable. Please refresh and try again.');
 
@@ -125,7 +131,7 @@ export async function startRazorpayCheckout(brandName: string): Promise<PaymentO
       amount: order.amount,
       currency: order.currency,
       name: brandName,
-      description: 'Flutter bug fixing — starting payment',
+      description: `${product.name} source code`,
       order_id: order.orderId,
       theme: { color: '#1f755d' },
       modal: { ondismiss: () => finish({ status: 'cancelled' }) },

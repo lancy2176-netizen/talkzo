@@ -23,6 +23,19 @@ export const createRazorpayOrderWebTemp = onRequest(commonOptions, async (reques
   }
 
   try {
+    const prices: Record<string, number> = {
+      portfolio: 35,
+      'student-lms': 75,
+      'groone-crm': 55,
+      'delivery-admin': 65,
+      'booking-cart': 49,
+    };
+    const productId = String(request.body?.productId || '');
+    const price = prices[productId];
+    if (!price) {
+      response.status(400).json({ error: 'Choose a valid product before checkout.' });
+      return;
+    }
     const keyId = razorpayKeyId.value();
     const keySecret = razorpayKeySecret.value();
     if (!keyId.startsWith('rzp_test_')) {
@@ -36,9 +49,9 @@ export const createRazorpayOrderWebTemp = onRequest(commonOptions, async (reques
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: 99900,
+        amount: price * 100,
         currency: 'INR',
-        receipt: `talkzo_${Date.now()}`,
+        receipt: `talkzo_${productId}_${Date.now()}`,
       }),
     });
     const order = await razorpayResponse.json() as {

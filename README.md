@@ -1,6 +1,6 @@
-# FlutterFix — Flutter bug-fixing service website
+# Talkzo — Codebase Marketplace
 
-A responsive React + TypeScript single-page website for a Flutter bug-fixing service advertised at **₹999 onwards**.
+A responsive React + TypeScript storefront for browsing and purchasing ready-to-customise website and application codebases. Product cards include preview artwork, project details, technology tags and product-specific Razorpay checkout.
 
 ## Run locally
 
@@ -11,9 +11,9 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal. The app includes a ₹999 Razorpay checkout. The development API creates the order server-side and verifies the checkout signature server-side. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env.local`; never put the secret in a `VITE_` variable or browser code. Use test keys until you are ready to take payments.
+Open the Vite URL printed in the terminal. The development API creates Razorpay orders on the server using the selected product's catalog price and verifies the checkout signature server-side. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env.local`; never put the secret in a `VITE_` variable or browser code. Use test keys until you are ready to take payments.
 
-The frontend Razorpay flow lives in `src/services/razorpayService.ts`. It requests a real order from Firebase Functions, passes the returned `order_id` to Standard Checkout, then verifies the payment signature through Firebase Functions. The service reports payment success, failure, dismissal and API errors to the existing UI.
+The frontend Razorpay flow lives in `src/services/razorpayService.ts`. It sends the selected product ID to the configured order endpoint, passes the returned `order_id` to Standard Checkout, then verifies the payment signature through the configured verification endpoint. The service reports payment success, failure, dismissal and API errors in the storefront.
 
 Razorpay documents Orders API creation as a server-side call. A browser request also fails CORS preflight against the Orders endpoint, so the Key Secret must stay on the server. Firebase Functions provide the minimal API backend while GitHub Pages continues hosting the frontend. [Razorpay Standard Checkout integration](https://razorpay.com/docs/server-integration/python/test-app/) · [Firebase HTTPS functions](https://firebase.google.com/docs/functions/http-events).
 
@@ -38,48 +38,29 @@ VITE_RAZORPAY_VERIFY_PAYMENT_URL=https://asia-south1-YOUR_PROJECT_ID.cloudfuncti
 
 Then run `npm run deploy` to rebuild and publish the frontend to GitHub Pages. Keep both Razorpay credentials in Firebase Secret Manager and `.env.local` only; never use a `VITE_` prefix for either credential. Firebase Functions are billed under the Blaze plan, which has usage-based charges.
 
-## Compatibility
-
-This source overlay is designed for the Vite + React + TypeScript project already created on your Mac. It uses only React, TypeScript and browser APIs — no additional npm packages are required. It does not change `package.json`, lockfiles, Vite, React or TypeScript versions.
-
-## Install into the existing Desktop project
-
-1. Download and extract `flutter-bug-fixing-site-source.zip`.
-2. Copy/merge the extracted `src` folder, `public` folder and `index.html` into `~/Desktop/react-ts-project`, replacing the starter `src/App.tsx`, `src/index.css` and `index.html`.
-3. In Terminal:
-
-```bash
-cd ~/Desktop/react-ts-project
-npm run build
-npm run dev
-```
-
 ## Configure your business contact
 
-Edit `src/config.ts`:
+Edit `src/config.ts` to change the brand name or WhatsApp contact:
 
 ```ts
 export const siteConfig = {
-  brandName: 'FlutterFix',
-  whatsappNumber: '919876543210', // digits only, with country code
+  brandName: 'Talkzo',
+  whatsappNumber: '', // digits only, with country code
   supportEmail: '',
 };
 ```
 
-Replace the example number with your real WhatsApp Business number before publishing. When a valid number is configured, the enquiry form opens WhatsApp with the customer's message prefilled. Until then, the form prepares the enquiry text and provides a copy button; it does not pretend to send the enquiry.
+Set the WhatsApp number with country code and digits only to enable the contact links.
 
-You should also replace the placeholder brand name with your own business name if required, then update the page title and metadata in `index.html`.
+Product names, prices and checkout allowlists are defined in `src/App.tsx`, `vite.config.ts`, `api/razorpay/create-order.ts` and `functions/src/index.ts`. Keep the catalog prices in sync in those places when changing products.
 
 ## Included
 
-- Responsive landing page for desktop, tablet and mobile
-- Flutter bug-fixing service categories
-- Transparent ₹999 starting-price section and estimate disclaimer
-- Three-step service process
-- Expandable FAQ section
-- Enquiry form with validation
-- WhatsApp handoff when a number is configured; copy-message fallback otherwise
+- Responsive codebase marketplace for desktop, tablet and mobile
+- Five project listings with locally bundled image previews
+- Technology tags and project descriptions
+- Product-specific Razorpay order amounts with server-side catalog allowlists
+- WhatsApp contact link when a number is configured
 - SEO title, description, Open Graph metadata and favicon
-- Accessibility labels, reduced-motion support and keyboard-friendly controls
 # talkzo
 # talkzo

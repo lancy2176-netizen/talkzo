@@ -11,8 +11,7 @@ type Product = {
   price: number;
   category: string;
   stack: string[];
-  repository: string;
-  accent: string;
+  thumbnail: string;
 };
 
 const products: Product[] = [
@@ -25,9 +24,7 @@ const products: Product[] = [
     price: 35,
     category: 'WEBSITE',
     stack: ['Web', 'Portfolio'],
-    repository:
-      'https://github.com/AdeebAbubacker/portfolio-2026',
-    accent: 'violet',
+    thumbnail: `${import.meta.env.BASE_URL}products/portfolio.svg`,
   },
   {
     id: 'student-lms',
@@ -38,9 +35,7 @@ const products: Product[] = [
     price: 75,
     category: 'EDTECH',
     stack: ['Angular', 'Firebase'],
-    repository:
-      'https://github.com/AdeebAbubacker/Student-Learning-Management-System',
-    accent: 'blue',
+    thumbnail: `${import.meta.env.BASE_URL}products/lms.svg`,
   },
   {
     id: 'groone-crm',
@@ -51,9 +46,7 @@ const products: Product[] = [
     price: 55,
     category: 'DASHBOARD',
     stack: ['Angular'],
-    repository:
-      'https://github.com/AdeebAbubacker/GroOneCRM',
-    accent: 'green',
+    thumbnail: `${import.meta.env.BASE_URL}products/crm.svg`,
   },
   {
     id: 'delivery-admin',
@@ -64,9 +57,7 @@ const products: Product[] = [
     price: 65,
     category: 'ADMIN PANEL',
     stack: ['Angular', 'Web'],
-    repository:
-      'https://github.com/AdeebAbubacker/Delivery-Admin-Panel',
-    accent: 'orange',
+    thumbnail: `${import.meta.env.BASE_URL}products/delivery.svg`,
   },
   {
     id: 'booking-cart',
@@ -77,49 +68,9 @@ const products: Product[] = [
     price: 49,
     category: 'E-COMMERCE',
     stack: ['ASP.NET Core', 'MVC'],
-    repository:
-      'https://github.com/AdeebAbubacker/Booking-Shop-Cart',
-    accent: 'pink',
+    thumbnail: `${import.meta.env.BASE_URL}products/booking-cart.svg`,
   },
 ];
-
-function CodeArtwork({ product }: { product: Product }) {
-  return (
-    <div className={`artwork artwork-${product.accent}`}>
-      <div className="artwork-top">
-        <span />
-        <span />
-        <span />
-        <small>PROJECT SOURCE</small>
-      </div>
-
-      <div className="artwork-code">
-        <div>
-          <i>01</i> <b>const</b> project = {'{'}
-        </div>
-        <div>
-          <i>02</i> &nbsp;name: <em>'{product.id}'</em>,
-        </div>
-        <div>
-          <i>03</i> &nbsp;status: <strong>'ready'</strong>,
-        </div>
-        <div>
-          <i>04</i> &nbsp;type: <u>'source-code'</u>
-        </div>
-        <div>
-          <i>05</i> {'}'};
-        </div>
-      </div>
-
-      <div className="artwork-number">{'</>'}</div>
-
-      <div className="artwork-bottom">
-        <span>● DIGITAL PRODUCT</span>
-        <span>◆ SOURCE CODE</span>
-      </div>
-    </div>
-  );
-}
 
 function App() {
   const [paymentBusy, setPaymentBusy] = useState<string | null>(null);
@@ -130,11 +81,7 @@ function App() {
     setPaymentStatus('');
 
     try {
-      // Uses your existing Razorpay checkout and verification service.
-      // The current backend does not yet receive product-specific pricing.
-      const outcome = await startRazorpayCheckout(
-        siteConfig.brandName,
-      );
+      const outcome = await startRazorpayCheckout(siteConfig.brandName, product);
 
       if (outcome.status === 'success') {
         setPaymentStatus(
@@ -500,107 +447,12 @@ function App() {
           border-color: #d9d4ff;
         }
 
-        .artwork {
+        .product-thumbnail {
+          display: block;
+          width: 100%;
           height: 185px;
-          position: relative;
-          overflow: hidden;
-          padding: 17px;
-          color: white;
-          font-family: 'DM Mono', monospace;
-        }
-
-        .artwork-violet {
-          background: linear-gradient(135deg, #282044, #5142a4);
-        }
-
-        .artwork-blue {
-          background: linear-gradient(135deg, #142c49, #315e9b);
-        }
-
-        .artwork-green {
-          background: linear-gradient(135deg, #153c39, #2b7667);
-        }
-
-        .artwork-orange {
-          background: linear-gradient(135deg, #492d25, #a85e3e);
-        }
-
-        .artwork-pink {
-          background: linear-gradient(135deg, #48283f, #995b86);
-        }
-
-        .artwork-top {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
-        .artwork-top span {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #ffffff70;
-        }
-
-        .artwork-top small {
-          margin-left: auto;
-          font-size: 8px;
-          letter-spacing: .12em;
-        }
-
-        .artwork-code {
-          position: relative;
-          margin-top: 22px;
-          display: grid;
-          gap: 6px;
-          font-size: 10px;
-        }
-
-        .artwork-code i {
-          display: inline-block;
-          width: 22px;
-          color: #ffffff60;
-          font-style: normal;
-          font-size: 8px;
-        }
-
-        .artwork-code b {
-          color: #c2b6ff;
-        }
-
-        .artwork-code em {
-          color: #a6e4c8;
-          font-style: normal;
-        }
-
-        .artwork-code strong {
-          color: #ffd18c;
-        }
-
-        .artwork-code u {
-          color: #9edbff;
-          text-decoration: none;
-        }
-
-        .artwork-number {
-          position: absolute;
-          right: 17px;
-          bottom: 16px;
-          font-size: 32px;
-          color: #ffffff40;
-        }
-
-        .artwork-bottom {
-          position: absolute;
-          left: 17px;
-          bottom: 12px;
-          font-size: 8px;
-          letter-spacing: .1em;
-          color: #ffffffa0;
-        }
-
-        .artwork-bottom span {
-          margin-left: 10px;
+          object-fit: cover;
+          background: #f1efff;
         }
 
         .product-content {
@@ -675,23 +527,6 @@ function App() {
           flex: 1;
           padding: 11px 8px;
           font-size: 11px;
-        }
-
-        .repo-link {
-          display: grid;
-          place-items: center;
-          width: 42px;
-          min-width: 42px;
-          border: 1px solid #e8e8ef;
-          border-radius: 9px;
-          color: #55566a;
-          text-decoration: none;
-          font-size: 17px;
-        }
-
-        .repo-link:hover {
-          border-color: #b9b0ff;
-          color: #6d5ce8;
         }
 
         .payment-notice {
@@ -959,16 +794,21 @@ function App() {
             </div>
 
             <p className="section-note">
-              Explore the available project listings. Each product
-              includes a repository reference so you can review
-              the project before making a decision.
+              Browse ready-to-customise project codebases, compare
+              the included technology stacks and choose a starting
+              point for your next build.
             </p>
           </div>
 
           <div className="product-grid">
             {products.map((product) => (
               <article className="product-card" key={product.id}>
-                <CodeArtwork product={product} />
+                <img
+                  className="product-thumbnail"
+                  src={product.thumbnail}
+                  alt={`${product.name} interface preview`}
+                  loading="lazy"
+                />
 
                 <div className="product-content">
                   <div className="product-meta">
@@ -1006,34 +846,12 @@ function App() {
                     >
                       {paymentBusy === product.id
                         ? 'Opening checkout…'
-                        : 'Continue to checkout ↗'}
+                        : `Buy codebase · ₹${product.price} ↗`}
                     </button>
-
-                    <a
-                      className="repo-link"
-                      href={product.repository}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`View ${product.name} repository`}
-                      title="View GitHub repository"
-                    >
-                      ⌘
-                    </a>
                   </div>
                 </div>
               </article>
             ))}
-          </div>
-
-          <div className="payment-notice">
-            <strong>Important checkout information:</strong>{' '}
-            Your existing Razorpay integration creates orders
-            using the amount configured by your payment server.
-            The individual catalogue prices displayed here are
-            not yet passed to the backend. Confirm the amount
-            displayed in Razorpay before completing payment.
-            Product-specific payment amounts will require a
-            backend update.
           </div>
 
           <p
