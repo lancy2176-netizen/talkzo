@@ -9,6 +9,8 @@ type RazorpayOptions = {
 };
 declare global { interface Window { Razorpay?: new (options: RazorpayOptions) => { open: () => void } } }
 
+const paymentApiBase = (import.meta.env.VITE_RAZORPAY_API_URL || '').replace(/\/$/, '');
+
 type IconName =
   | 'arrow-up-right'
   | 'arrow-right'
@@ -226,7 +228,7 @@ function App() {
         document.body.appendChild(script);
       });
       await loadCheckout();
-      const orderResponse = await fetch('/api/razorpay/create-order', { method: 'POST' });
+      const orderResponse = await fetch(`${paymentApiBase}/api/razorpay/create-order`, { method: 'POST' });
       const order = await orderResponse.json() as { orderId?: string; amount?: number; currency?: string; keyId?: string; error?: string };
       if (!orderResponse.ok || !order.orderId || !order.keyId || !order.amount || !order.currency) {
         throw new Error(order.error || 'Could not start checkout. Confirm Razorpay server credentials are configured.');
@@ -242,7 +244,7 @@ function App() {
         modal: { ondismiss: () => setPaymentBusy(false) },
         handler: async (result) => {
           try {
-            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+            const verifyResponse = await fetch(`${paymentApiBase}/api/razorpay/verify-payment`, {
               method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(result),
             });
             const verification = await verifyResponse.json() as { verified?: boolean; error?: string };
