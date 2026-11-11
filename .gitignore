@@ -23,6 +23,13 @@ dist-ssr
 .env.example
 .env.local
 
+# Firebase CLI configuration and local state
+.firebase/
+.firebaserc
+firebase.json
+firebase-debug.log
+firebase-debug.*.log
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
