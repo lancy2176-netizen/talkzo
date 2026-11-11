@@ -1,545 +1,1082 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+
+import { useState } from 'react';
 import { siteConfig } from './config';
 import { startRazorpayCheckout } from './services/razorpayService';
 
-type IconName =
-  | 'arrow-up-right'
-  | 'arrow-right'
-  | 'check'
-  | 'bug'
-  | 'code'
-  | 'cloud'
-  | 'zap'
-  | 'shield'
-  | 'smartphone'
-  | 'api'
-  | 'terminal'
-  | 'gauge'
-  | 'message'
-  | 'menu'
-  | 'close'
-  | 'plus'
-  | 'minus'
-  | 'copy'
-  | 'send'
-  | 'sparkles'
-  | 'clock';
+type Product = {
+  id: string;
+  name: string;
+  subtitle: string;
+  description: string;
+  price: number;
+  category: string;
+  stack: string[];
+  repository: string;
+  accent: string;
+};
 
-function Icon({ name, className = '' }: { name: IconName; className?: string }) {
-  let content: ReactNode;
+const products: Product[] = [
+  {
+    id: 'portfolio',
+    name: 'Portfolio Website',
+    subtitle: 'Personal portfolio source code',
+    description:
+      'A customisable portfolio website codebase for showcasing projects, skills and professional work.',
+    price: 35,
+    category: 'WEBSITE',
+    stack: ['Web', 'Portfolio'],
+    repository:
+      'https://github.com/AdeebAbubacker/portfolio-2026',
+    accent: 'violet',
+  },
+  {
+    id: 'student-lms',
+    name: 'Student Learning Management System',
+    subtitle: 'Learning management source code',
+    description:
+      'An LMS project codebase with student, teacher and administrator-oriented functionality.',
+    price: 75,
+    category: 'EDTECH',
+    stack: ['Angular', 'Firebase'],
+    repository:
+      'https://github.com/AdeebAbubacker/Student-Learning-Management-System',
+    accent: 'blue',
+  },
+  {
+    id: 'groone-crm',
+    name: 'GroOne CRM Dashboard',
+    subtitle: 'CRM dashboard source code',
+    description:
+      'A dashboard-style web application codebase for CRM-related development and customisation.',
+    price: 55,
+    category: 'DASHBOARD',
+    stack: ['Angular'],
+    repository:
+      'https://github.com/AdeebAbubacker/GroOneCRM',
+    accent: 'green',
+  },
+  {
+    id: 'delivery-admin',
+    name: 'Delivery Admin Panel',
+    subtitle: 'Delivery management source code',
+    description:
+      'An admin panel codebase for delivery operations, assignment workflows and management views.',
+    price: 65,
+    category: 'ADMIN PANEL',
+    stack: ['Angular', 'Web'],
+    repository:
+      'https://github.com/AdeebAbubacker/Delivery-Admin-Panel',
+    accent: 'orange',
+  },
+  {
+    id: 'booking-cart',
+    name: 'Booking & Shopping Cart',
+    subtitle: 'Booking and cart project source code',
+    description:
+      'A web application codebase with booking and shopping-cart project structure.',
+    price: 49,
+    category: 'E-COMMERCE',
+    stack: ['ASP.NET Core', 'MVC'],
+    repository:
+      'https://github.com/AdeebAbubacker/Booking-Shop-Cart',
+    accent: 'pink',
+  },
+];
 
-  switch (name) {
-    case 'arrow-up-right':
-      content = <><path d="M7 17 17 7" /><path d="M7 7h10v10" /></>;
-      break;
-    case 'arrow-right':
-      content = <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>;
-      break;
-    case 'check':
-      content = <path d="m5 12 4 4L19 6" />;
-      break;
-    case 'bug':
-      content = <><path d="M8 9h8v8a4 4 0 0 1-8 0V9Z" /><path d="M10 5.5 12 4l2 1.5M4 10h4m8 0h4M4 16h4m8 0h4M6 4l2 3m10-3-2 3M12 9v10" /></>;
-      break;
-    case 'code':
-      content = <><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" /></>;
-      break;
-    case 'cloud':
-      content = <><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.5 4.5 0 0 0 7 18Z" /><path d="m9 13 2 2 4-4" /></>;
-      break;
-    case 'zap':
-      content = <path d="m13 2-3 9h7l-6 11 2-9H6l7-11Z" />;
-      break;
-    case 'shield':
-      content = <><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" /><path d="m9 12 2 2 4-4" /></>;
-      break;
-    case 'smartphone':
-      content = <><rect x="6" y="2" width="12" height="20" rx="2" /><path d="M11 18h2" /></>;
-      break;
-    case 'api':
-      content = <><path d="M8 8 4 12l4 4M16 8l4 4-4 4M14 5l-4 14" /><path d="M3 3h18v18H3z" opacity=".15" /></>;
-      break;
-    case 'terminal':
-      content = <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3m6 0h4" /></>;
-      break;
-    case 'gauge':
-      content = <><path d="M4.5 19a9 9 0 1 1 15 0" /><path d="m12 13 4-4M7 19h10" /></>;
-      break;
-    case 'message':
-      content = <><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z" /></>;
-      break;
-    case 'menu':
-      content = <><path d="M4 7h16M4 12h16M4 17h16" /></>;
-      break;
-    case 'close':
-      content = <><path d="m18 6-12 12M6 6l12 12" /></>;
-      break;
-    case 'plus':
-      content = <><path d="M12 5v14M5 12h14" /></>;
-      break;
-    case 'minus':
-      content = <path d="M5 12h14" />;
-      break;
-    case 'copy':
-      content = <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>;
-      break;
-    case 'send':
-      content = <><path d="m22 2-7 20-4-9-9-4 20-7Z" /><path d="M22 2 11 13" /></>;
-      break;
-    case 'sparkles':
-      content = <><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" /><path d="m19 14 .9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14ZM5 2l.7 1.8L7.5 4.5l-1.8.7L5 7l-.7-1.8-1.8-.7 1.8-.7L5 2Z" /></>;
-      break;
-    case 'clock':
-      content = <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>;
-      break;
-    default:
-      content = null;
-  }
-
+function CodeArtwork({ product }: { product: Product }) {
   return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {content}
-    </svg>
+    <div className={`artwork artwork-${product.accent}`}>
+      <div className="artwork-top">
+        <span />
+        <span />
+        <span />
+        <small>PROJECT SOURCE</small>
+      </div>
+
+      <div className="artwork-code">
+        <div>
+          <i>01</i> <b>const</b> project = {'{'}
+        </div>
+        <div>
+          <i>02</i> &nbsp;name: <em>'{product.id}'</em>,
+        </div>
+        <div>
+          <i>03</i> &nbsp;status: <strong>'ready'</strong>,
+        </div>
+        <div>
+          <i>04</i> &nbsp;type: <u>'source-code'</u>
+        </div>
+        <div>
+          <i>05</i> {'}'};
+        </div>
+      </div>
+
+      <div className="artwork-number">{'</>'}</div>
+
+      <div className="artwork-bottom">
+        <span>● DIGITAL PRODUCT</span>
+        <span>◆ SOURCE CODE</span>
+      </div>
+    </div>
   );
 }
 
-const services: { icon: IconName; title: string; description: string; tag: string }[] = [
-  {
-    icon: 'bug',
-    title: 'App crashes & runtime bugs',
-    description: 'Track down unexpected crashes, exceptions, freezes and issues that interrupt the user journey.',
-    tag: 'Stability',
-  },
-  {
-    icon: 'smartphone',
-    title: 'UI & layout issues',
-    description: 'Fix overflow, responsive layouts, navigation glitches, spacing and platform-specific UI behaviour.',
-    tag: 'Interface',
-  },
-  {
-    icon: 'api',
-    title: 'API & data integration',
-    description: 'Investigate API errors, parsing problems, loading states, authentication and unreliable data flows.',
-    tag: 'Integrations',
-  },
-  {
-    icon: 'cloud',
-    title: 'Firebase & notifications',
-    description: 'Troubleshoot Firebase Auth, Firestore, Storage, push notifications and configuration issues.',
-    tag: 'Backend',
-  },
-  {
-    icon: 'terminal',
-    title: 'Build & release errors',
-    description: 'Resolve common Android and iOS build failures, dependency conflicts and release configuration issues.',
-    tag: 'Builds',
-  },
-  {
-    icon: 'gauge',
-    title: 'Performance improvements',
-    description: 'Look into slow screens, unnecessary rebuilds, memory concerns and performance bottlenecks.',
-    tag: 'Performance',
-  },
-];
-
-const steps = [
-  {
-    number: '01',
-    title: 'Tell us what is broken',
-    description: 'Share the error, a short screen recording or the steps needed to reproduce the issue.',
-  },
-  {
-    number: '02',
-    title: 'Get a clear estimate',
-    description: 'We review the scope and confirm the likely effort, price and next steps before work begins.',
-  },
-  {
-    number: '03',
-    title: 'Fix, test & hand back',
-    description: 'The agreed fix is implemented, checked against the reported issue and handed back with an update.',
-  },
-];
-
-const faqs = [
-  {
-    question: 'Is ₹999 the final price for every bug?',
-    answer:
-      '₹999 is the starting price for a small, clearly scoped issue. The final estimate depends on the cause, complexity and time needed. You will receive a quote for approval before any paid work starts.',
-  },
-  {
-    question: 'What should I share to get an estimate?',
-    answer:
-      'A short description, the exact steps that cause the issue, the error message or logs, and a screen recording if the problem is visual. Please remove passwords, API secrets and real user data before sharing anything.',
-  },
-  {
-    question: 'Can you work on an existing Flutter project?',
-    answer:
-      'Yes. Existing Flutter projects can be reviewed once the relevant source files and steps to reproduce the issue are available. Access should be limited to what is needed for the agreed task.',
-  },
-  {
-    question: 'Do you fix both Android and iOS issues?',
-    answer:
-      'The service can cover Flutter issues on Android and iOS. Some fixes depend on platform-specific setup, certificates, devices or third-party services, so those requirements are confirmed during the review.',
-  },
-  {
-    question: 'Will you start fixing immediately after I submit?',
-    answer:
-      'No work is assumed or started just because you send an enquiry. First the issue is reviewed, then the scope and estimate are shared for your approval.',
-  },
-];
-
 function App() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [draftMessage, setDraftMessage] = useState('');
-  const [formStatus, setFormStatus] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState('');
 
-  async function startPayment() {
-    setPaymentBusy(true);
+  async function buyProduct(product: Product) {
+    setPaymentBusy(product.id);
     setPaymentStatus('');
+
     try {
-      const outcome = await startRazorpayCheckout(siteConfig.brandName);
-      if (outcome.status === 'success') setPaymentStatus(`Payment verified. Reference: ${outcome.paymentId}`);
-      if (outcome.status === 'failure') setPaymentStatus(`Payment failed: ${outcome.message}`);
-      if (outcome.status === 'cancelled') setPaymentStatus('Payment cancelled. No payment was completed.');
+      // Uses your existing Razorpay checkout and verification service.
+      // The current backend does not yet receive product-specific pricing.
+      const outcome = await startRazorpayCheckout(
+        siteConfig.brandName,
+      );
+
+      if (outcome.status === 'success') {
+        setPaymentStatus(
+          `Payment verified. Reference: ${outcome.paymentId}`,
+        );
+      } else if (outcome.status === 'failure') {
+        setPaymentStatus(
+          `Payment failed: ${outcome.message}`,
+        );
+      } else {
+        setPaymentStatus(
+          'Payment cancelled. No payment was completed.',
+        );
+      }
     } catch (error) {
-      setPaymentStatus(error instanceof Error ? error.message : 'Could not start payment. Please try again.');
+      setPaymentStatus(
+        error instanceof Error
+          ? error.message
+          : 'Could not start payment. Please try again.',
+      );
     } finally {
-      setPaymentBusy(false);
+      setPaymentBusy(null);
     }
   }
 
-  const closeMenu = () => setMenuOpen(false);
+  const whatsappNumber =
+    siteConfig.whatsappNumber.replace(/\D/g, '');
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = new FormData(form);
-    const name = String(data.get('name') ?? '').trim();
-    const email = String(data.get('email') ?? '').trim();
-    const issueType = String(data.get('issueType') ?? '').trim();
-    const details = String(data.get('details') ?? '').trim();
-
-    const message = [
-      `Hi ${siteConfig.brandName}, I would like help with a Flutter app issue.`,
-      '',
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Issue type: ${issueType}`,
-      '',
-      'Issue details:',
-      details,
-      '',
-      'Please share the next steps and an estimate. Thank you.',
-    ].join('\n');
-
-    setDraftMessage(message);
-    setCopied(false);
-
-    const number = siteConfig.whatsappNumber.replace(/\D/g, '');
-    if (/^\d{10,15}$/.test(number)) {
-      const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-      setFormStatus('Your enquiry is ready in WhatsApp. Review it there and send when ready.');
-    } else {
-      setFormStatus('Your enquiry is prepared below. Copy it and send it through your preferred contact channel.');
-    }
-  }
-
-  async function copyMessage() {
-    if (!draftMessage) return;
-    try {
-      await navigator.clipboard.writeText(draftMessage);
-      setCopied(true);
-    } catch {
-      setFormStatus('Clipboard access was unavailable. Select and copy the message below.');
-    }
-  }
+  const whatsappUrl = /^\d{10,15}$/.test(whatsappNumber)
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        'Hi, I would like to know more about your source code products.',
+      )}`
+    : '#products';
 
   return (
-    <div className="site-shell">
-      <div className="announcement-bar">
-        <span className="announcement-dot" />
-        Flutter app bug fixing & support
-        <span className="announcement-divider">·</span>
-        Starting at <strong>₹999</strong>
-        <a href="#contact" className="announcement-link">Get an estimate <Icon name="arrow-up-right" /></a>
+    <div className="market-shell">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html {
+          scroll-behavior: smooth;
+        }
+
+        body {
+          margin: 0;
+          background: #f7f8fc;
+          color: #17182a;
+          font-family: 'DM Sans', sans-serif;
+        }
+
+        .market-shell {
+          min-height: 100vh;
+          overflow: hidden;
+        }
+
+        .market-top {
+          background: #17182a;
+          color: #c9c9d8;
+          padding: 10px;
+          text-align: center;
+          font-size: 10px;
+          letter-spacing: .12em;
+        }
+
+        .market-top b {
+          color: #b8a7ff;
+        }
+
+        .market-header {
+          max-width: 1160px;
+          height: 76px;
+          margin: auto;
+          padding: 0 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .market-brand {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          color: #17182a;
+          text-decoration: none;
+        }
+
+        .market-logo {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: #6d5ce8;
+          color: white;
+          display: grid;
+          place-items: center;
+          font-weight: 800;
+          font-size: 15px;
+        }
+
+        .market-brand strong {
+          display: block;
+          font-size: 15px;
+        }
+
+        .market-brand small {
+          display: block;
+          margin-top: 3px;
+          color: #85869a;
+          font: 9px 'DM Mono', monospace;
+          letter-spacing: .13em;
+        }
+
+        .market-nav {
+          display: flex;
+          align-items: center;
+          gap: 25px;
+        }
+
+        .market-nav a {
+          color: #65667a;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .market-nav a:hover {
+          color: #6d5ce8;
+        }
+
+        .market-nav .nav-cta {
+          background: #6d5ce8;
+          color: white;
+          padding: 11px 17px;
+          border-radius: 9px;
+        }
+
+        .market-hero {
+          max-width: 1160px;
+          margin: auto;
+          padding: 80px 24px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 55px;
+          align-items: center;
+        }
+
+        .market-eyebrow {
+          color: #6d5ce8;
+          font: 11px 'DM Mono', monospace;
+          letter-spacing: .15em;
+        }
+
+        .market-hero h1 {
+          font-size: clamp(43px, 5.5vw, 68px);
+          line-height: 1.04;
+          letter-spacing: -.065em;
+          margin: 22px 0;
+          font-weight: 800;
+        }
+
+        .market-hero h1 span,
+        .section-top h2 span {
+          color: #6d5ce8;
+        }
+
+        .market-lead {
+          color: #6e7084;
+          font-size: 15px;
+          line-height: 1.8;
+          max-width: 520px;
+        }
+
+        .market-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 28px;
+          flex-wrap: wrap;
+        }
+
+        .market-button {
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
+          gap: 9px;
+          padding: 13px 18px;
+          border-radius: 9px;
+          background: #6d5ce8;
+          color: white;
+          text-decoration: none;
+          border: 0;
+          font: 700 12px 'DM Sans', sans-serif;
+          cursor: pointer;
+          transition: .2s;
+        }
+
+        .market-button:hover {
+          background: #5745d0;
+          transform: translateY(-1px);
+        }
+
+        .market-button:disabled {
+          opacity: .6;
+          cursor: wait;
+          transform: none;
+        }
+
+        .market-button.secondary {
+          background: white;
+          color: #27283b;
+          border: 1px solid #e6e6ef;
+        }
+
+        .market-trust {
+          display: flex;
+          gap: 18px;
+          flex-wrap: wrap;
+          margin-top: 25px;
+          color: #7c7d8f;
+          font-size: 11px;
+        }
+
+        .market-trust span:before {
+          content: '✓';
+          color: #319b75;
+          margin-right: 6px;
+          font-weight: 800;
+        }
+
+        .hero-preview {
+          background: #17182a;
+          border-radius: 24px;
+          padding: 24px;
+          box-shadow: 0 28px 70px #22204426;
+          transform: rotate(1deg);
+        }
+
+        .preview-head,
+        .preview-footer {
+          display: flex;
+          justify-content: space-between;
+          color: #a9aabd;
+          font: 10px 'DM Mono', monospace;
+        }
+
+        .preview-main {
+          margin-top: 22px;
+          background: #22243b;
+          border: 1px solid #383a55;
+          border-radius: 15px;
+          padding: 22px;
+        }
+
+        .preview-label {
+          color: #a7a0ff;
+          font: 10px 'DM Mono', monospace;
+        }
+
+        .preview-title {
+          font-size: 26px;
+          color: white;
+          font-weight: 800;
+          margin: 12px 0;
+        }
+
+        .preview-sub {
+          color: #9a9bb0;
+          font-size: 11px;
+        }
+
+        .preview-bars {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 9px;
+          margin-top: 22px;
+        }
+
+        .preview-bars span {
+          height: 55px;
+          border-radius: 8px;
+          background: linear-gradient(145deg, #7665ed, #35365b);
+        }
+
+        .preview-bars span:nth-child(2) {
+          background: linear-gradient(145deg, #41b99b, #284e58);
+        }
+
+        .preview-bars span:nth-child(3) {
+          background: linear-gradient(145deg, #e8a45d, #694b59);
+        }
+
+        .preview-code {
+          margin-top: 15px;
+          padding: 14px;
+          background: #191a2c;
+          border-radius: 9px;
+          color: #aaaac1;
+          font: 10px/2 'DM Mono', monospace;
+        }
+
+        .preview-code b {
+          color: #b4a9ff;
+        }
+
+        .preview-code em {
+          color: #8fd7ba;
+          font-style: normal;
+        }
+
+        .preview-footer {
+          margin-top: 17px;
+        }
+
+        .market-section {
+          max-width: 1160px;
+          margin: auto;
+          padding: 55px 24px 85px;
+        }
+
+        .section-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
+          gap: 25px;
+          margin-bottom: 30px;
+        }
+
+        .section-top h2 {
+          font-size: 38px;
+          line-height: 1.1;
+          letter-spacing: -.055em;
+          margin: 13px 0 0;
+        }
+
+        .section-note {
+          max-width: 360px;
+          color: #77798c;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .product-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 20px;
+        }
+
+        .product-card {
+          background: white;
+          border: 1px solid #e9eaf1;
+          border-radius: 17px;
+          overflow: hidden;
+          transition: .2s;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .product-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 18px 40px #26234a12;
+          border-color: #d9d4ff;
+        }
+
+        .artwork {
+          height: 185px;
+          position: relative;
+          overflow: hidden;
+          padding: 17px;
+          color: white;
+          font-family: 'DM Mono', monospace;
+        }
+
+        .artwork-violet {
+          background: linear-gradient(135deg, #282044, #5142a4);
+        }
+
+        .artwork-blue {
+          background: linear-gradient(135deg, #142c49, #315e9b);
+        }
+
+        .artwork-green {
+          background: linear-gradient(135deg, #153c39, #2b7667);
+        }
+
+        .artwork-orange {
+          background: linear-gradient(135deg, #492d25, #a85e3e);
+        }
+
+        .artwork-pink {
+          background: linear-gradient(135deg, #48283f, #995b86);
+        }
+
+        .artwork-top {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .artwork-top span {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #ffffff70;
+        }
+
+        .artwork-top small {
+          margin-left: auto;
+          font-size: 8px;
+          letter-spacing: .12em;
+        }
+
+        .artwork-code {
+          position: relative;
+          margin-top: 22px;
+          display: grid;
+          gap: 6px;
+          font-size: 10px;
+        }
+
+        .artwork-code i {
+          display: inline-block;
+          width: 22px;
+          color: #ffffff60;
+          font-style: normal;
+          font-size: 8px;
+        }
+
+        .artwork-code b {
+          color: #c2b6ff;
+        }
+
+        .artwork-code em {
+          color: #a6e4c8;
+          font-style: normal;
+        }
+
+        .artwork-code strong {
+          color: #ffd18c;
+        }
+
+        .artwork-code u {
+          color: #9edbff;
+          text-decoration: none;
+        }
+
+        .artwork-number {
+          position: absolute;
+          right: 17px;
+          bottom: 16px;
+          font-size: 32px;
+          color: #ffffff40;
+        }
+
+        .artwork-bottom {
+          position: absolute;
+          left: 17px;
+          bottom: 12px;
+          font-size: 8px;
+          letter-spacing: .1em;
+          color: #ffffffa0;
+        }
+
+        .artwork-bottom span {
+          margin-left: 10px;
+        }
+
+        .product-content {
+          padding: 19px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .product-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .product-category {
+          font: 9px 'DM Mono', monospace;
+          color: #8175dc;
+          background: #f1efff;
+          padding: 6px 8px;
+          border-radius: 5px;
+        }
+
+        .product-price {
+          font-size: 21px;
+          font-weight: 800;
+        }
+
+        .product-content h3 {
+          font-size: 17px;
+          line-height: 1.35;
+          margin: 15px 0 5px;
+          letter-spacing: -.03em;
+        }
+
+        .product-subtitle {
+          color: #8a8b9c;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .product-description {
+          color: #77798b;
+          font-size: 12px;
+          line-height: 1.7;
+          margin: 12px 0;
+        }
+
+        .product-tags {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 17px;
+        }
+
+        .product-tags span {
+          font-size: 9px;
+          color: #77798b;
+          background: #f5f5f9;
+          padding: 6px 8px;
+          border-radius: 5px;
+        }
+
+        .product-actions {
+          display: flex;
+          gap: 9px;
+          margin-top: auto;
+        }
+
+        .product-actions .market-button {
+          flex: 1;
+          padding: 11px 8px;
+          font-size: 11px;
+        }
+
+        .repo-link {
+          display: grid;
+          place-items: center;
+          width: 42px;
+          min-width: 42px;
+          border: 1px solid #e8e8ef;
+          border-radius: 9px;
+          color: #55566a;
+          text-decoration: none;
+          font-size: 17px;
+        }
+
+        .repo-link:hover {
+          border-color: #b9b0ff;
+          color: #6d5ce8;
+        }
+
+        .payment-notice {
+          margin-top: 24px;
+          padding: 14px 16px;
+          border: 1px solid #f0dfb7;
+          background: #fffaf0;
+          border-radius: 10px;
+          color: #79633a;
+          font-size: 11px;
+          line-height: 1.7;
+        }
+
+        .payment-status {
+          margin-top: 15px;
+          color: #356d57;
+          font-size: 12px;
+          min-height: 18px;
+        }
+
+        .market-bottom {
+          background: #191a2c;
+          color: white;
+          padding: 50px 24px;
+        }
+
+        .market-bottom-inner {
+          max-width: 1112px;
+          margin: auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 25px;
+        }
+
+        .market-bottom h2 {
+          font-size: 28px;
+          margin: 0 0 8px;
+          letter-spacing: -.04em;
+        }
+
+        .market-bottom p {
+          color: #aaaabd;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .market-footer {
+          max-width: 1160px;
+          margin: auto;
+          padding: 22px 24px;
+          display: flex;
+          justify-content: space-between;
+          gap: 15px;
+          color: #85869a;
+          font-size: 10px;
+        }
+
+        .market-footer a {
+          color: #6d5ce8;
+          text-decoration: none;
+        }
+
+        @media (max-width: 850px) {
+          .market-hero {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
+
+          .hero-preview {
+            max-width: 560px;
+            width: 100%;
+            margin: auto;
+          }
+
+          .product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .section-top {
+            align-items: start;
+            flex-direction: column;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .market-header {
+            height: 66px;
+            padding: 0 18px;
+          }
+
+          .market-nav {
+            gap: 12px;
+          }
+
+          .market-nav a:not(.nav-cta) {
+            display: none;
+          }
+
+          .market-hero {
+            padding: 48px 19px;
+          }
+
+          .market-hero h1 {
+            font-size: 44px;
+          }
+
+          .market-section {
+            padding: 42px 18px 65px;
+          }
+
+          .section-top h2 {
+            font-size: 31px;
+          }
+
+          .product-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .market-bottom-inner {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .market-footer {
+            flex-direction: column;
+          }
+
+          .market-top {
+            font-size: 9px;
+          }
+        }
+      `}</style>
+
+      <div className="market-top">
+        INDEPENDENT DIGITAL PRODUCTS <b>· SOURCE CODE COLLECTION</b>
       </div>
 
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label={`${siteConfig.brandName} home`} onClick={closeMenu}>
-          <span className="brand-mark"><span>F</span><i /></span>
-          <span className="brand-copy">
+      <header className="market-header">
+        <a className="market-brand" href="#top">
+          <span className="market-logo">{'</>'}</span>
+          <span>
             <strong>{siteConfig.brandName}</strong>
-            <small>FLUTTER APP SUPPORT</small>
+            <small>CODE MARKETPLACE</small>
           </span>
         </a>
 
-        <nav className={`main-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Main navigation">
-          <a href="#services" onClick={closeMenu}>What we fix</a>
-          <a href="#process" onClick={closeMenu}>How it works</a>
-          <a href="#pricing" onClick={closeMenu}>Pricing</a>
-          <a href="#faq" onClick={closeMenu}>FAQs</a>
-          <a className="mobile-nav-cta" href="#contact" onClick={closeMenu}>Get an estimate <Icon name="arrow-up-right" /></a>
+        <nav className="market-nav" aria-label="Main navigation">
+          <a href="#products">Browse code</a>
+          <a href="#about">About</a>
+          <a
+            className="nav-cta"
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Contact us ↗
+          </a>
         </nav>
-
-        <a className="header-cta" href="#contact">Get an estimate <Icon name="arrow-up-right" /></a>
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <Icon name={menuOpen ? 'close' : 'menu'} />
-        </button>
       </header>
 
-      <main>
-        <section className="hero-section" id="top">
-          <div className="hero-grid-bg" />
-          <div className="hero-content">
-            <div className="eyebrow"><span className="eyebrow-line" /> FLUTTER BUG FIXING, MADE SIMPLE</div>
-            <h1>Let’s get your app<br /><span>back on track.</span></h1>
-            <p className="hero-description">
-              Stuck with a Flutter error, broken screen or build issue? Get practical debugging help and a clear estimate before the fix begins.
+      <main id="top">
+        <section className="market-hero">
+          <div>
+            <div className="market-eyebrow">
+              DIGITAL SOURCE CODE STORE
+            </div>
+
+            <h1>
+              Build faster.
+              <br />
+              <span>Start with code.</span>
+            </h1>
+
+            <p className="market-lead">
+              Browse practical software project source code for
+              learning, customisation and development. Choose a
+              project, review its details and get in touch if you
+              need more information.
             </p>
-            <div className="hero-actions">
-              <a href="#contact" className="button button-primary">Tell us what’s broken <Icon name="arrow-up-right" /></a>
-              <a href="#services" className="text-link">Explore what we fix <Icon name="arrow-right" /></a>
+
+            <div className="market-actions">
+              <a className="market-button" href="#products">
+                Explore source code ↗
+              </a>
+
+              <a
+                className="market-button secondary"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ask a question
+              </a>
             </div>
-            <div className="hero-assurances">
-              <div><span className="assurance-icon"><Icon name="check" /></span><span>Estimate before work starts</span></div>
-              <div><span className="assurance-icon"><Icon name="check" /></span><span>Clear issue-by-issue scope</span></div>
+
+            <div className="market-trust">
+              <span>Digital source code</span>
+              <span>Clear product listings</span>
+              <span>Secure checkout flow</span>
             </div>
           </div>
 
-          <div className="hero-visual" aria-label="Illustration of a Flutter debugging workspace">
-            <div className="visual-orbit orbit-one" />
-            <div className="visual-orbit orbit-two" />
-            <div className="code-window">
-              <div className="window-topbar">
-                <div className="window-dots"><i /><i /><i /></div>
-                <span>debug_session.dart</span>
-                <span className="window-status"><i /> REVIEW</span>
-              </div>
-              <div className="code-body">
-                <div className="code-line"><span className="line-no">01</span><code><b>class</b> AppIssue <em>extends</em> DebugTask {'{'}</code></div>
-                <div className="code-line"><span className="line-no">02</span><code>&nbsp;&nbsp;<b>final</b> status = <i>'identified'</i>;</code></div>
-                <div className="code-line"><span className="line-no">03</span><code>&nbsp;&nbsp;<b>final</b> approach = <i>'understand first'</i>;</code></div>
-                <div className="code-line"><span className="line-no">04</span><code>&nbsp;</code></div>
-                <div className="code-line code-highlight"><span className="line-no">05</span><code>&nbsp;&nbsp;<b>Future</b>&lt;Fix&gt; resolve() <em>async</em> {'{'}</code></div>
-                <div className="code-line"><span className="line-no">06</span><code>&nbsp;&nbsp;&nbsp;&nbsp;<b>return</b> testAndVerify();</code></div>
-                <div className="code-line"><span className="line-no">07</span><code>&nbsp;&nbsp;{'}'}</code></div>
-                <div className="code-line"><span className="line-no">08</span><code>{'}'}</code></div>
-              </div>
-              <div className="window-footer"><span><i className="status-pulse" /> Ready for review</span><span>Flutter · Dart</span></div>
+          <div
+            className="hero-preview"
+            aria-label="Source code preview illustration"
+          >
+            <div className="preview-head">
+              <span>● ● ●</span>
+              <span>PROJECT_OVERVIEW</span>
+              <span>•••</span>
             </div>
-            <div className="floating-note note-top"><span className="note-icon note-icon-green"><Icon name="shield" /></span><span><strong>Careful diagnosis</strong><small>Understand the root cause</small></span></div>
-            <div className="floating-note note-bottom"><span className="note-icon note-icon-purple"><Icon name="zap" /></span><span><strong>Focused fixes</strong><small>One issue at a time</small></span></div>
-            <div className="hero-price-chip"><span>STARTING FROM</span><strong>₹999<small> onwards</small></strong></div>
-          </div>
 
-          <div className="hero-bottom-line">
-            <span>HELP FOR YOUR FLUTTER PROJECT</span>
-            <div className="tech-tags"><span>Flutter</span><i /> <span>Dart</span><i /> <span>Firebase</span><i /> <span>REST APIs</span><i /> <span>Android & iOS</span></div>
+            <div className="preview-main">
+              <div className="preview-label">
+                DEVELOPER TOOLKIT / 2026
+              </div>
+
+              <div className="preview-title">
+                Your next project
+                <br />
+                starts here.
+              </div>
+
+              <div className="preview-sub">
+                Reusable foundations. Your own ideas.
+              </div>
+
+              <div className="preview-bars">
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <div className="preview-code">
+                <b>const</b> source = {'{'}
+                <br />
+                &nbsp;&nbsp;quality: <em>'digital'</em>,
+                <br />
+                &nbsp;&nbsp;format: <em>'source-code'</em>
+                <br />
+                {'}'};
+              </div>
+            </div>
+
+            <div className="preview-footer">
+              <span>GIT · SOURCE FILES</span>
+              <span>01 — 05</span>
+            </div>
           </div>
         </section>
 
-        <section className="problem-strip" aria-label="Common Flutter issues">
-          <div className="problem-strip-label">WHEN YOUR APP…</div>
-          <div className="problem-item"><span className="problem-symbol">!</span> Crashes unexpectedly</div>
-          <div className="problem-item"><span className="problem-symbol">↗</span> Has a broken layout</div>
-          <div className="problem-item"><span className="problem-symbol">⌁</span> Fails to build</div>
-          <div className="problem-item"><span className="problem-symbol">⌘</span> Can’t reach an API</div>
-        </section>
-
-        <section className="section services-section" id="services">
-          <div className="section-heading-row">
+        <section className="market-section" id="products">
+          <div className="section-top">
             <div>
-              <div className="eyebrow"><span className="eyebrow-line" /> WHAT WE CAN HELP WITH</div>
-              <h2>Small bug or stubborn error.<br /><span>Let’s untangle it.</span></h2>
+              <div className="market-eyebrow">
+                THE CODE COLLECTION
+              </div>
+
+              <h2>
+                Find your next
+                <br />
+                <span>starting point.</span>
+              </h2>
             </div>
-            <p className="section-intro">Practical help for the problems that slow down your Flutter app. Share the symptoms and we’ll help define the next step.</p>
+
+            <p className="section-note">
+              Explore the available project listings. Each product
+              includes a repository reference so you can review
+              the project before making a decision.
+            </p>
           </div>
 
-          <div className="services-grid">
-            {services.map((service, index) => (
-              <article className="service-card" key={service.title}>
-                <div className={`service-icon service-icon-${index + 1}`}><Icon name={service.icon} /></div>
-                <div className="service-tag">{service.tag}</div>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-                <a href="#contact" className="card-link" aria-label={`Ask about ${service.title}`}>Discuss this issue <Icon name="arrow-up-right" /></a>
+          <div className="product-grid">
+            {products.map((product) => (
+              <article className="product-card" key={product.id}>
+                <CodeArtwork product={product} />
+
+                <div className="product-content">
+                  <div className="product-meta">
+                    <span className="product-category">
+                      {product.category}
+                    </span>
+
+                    <span className="product-price">
+                      ₹{product.price}
+                    </span>
+                  </div>
+
+                  <h3>{product.name}</h3>
+
+                  <div className="product-subtitle">
+                    {product.subtitle}
+                  </div>
+
+                  <p className="product-description">
+                    {product.description}
+                  </p>
+
+                  <div className="product-tags">
+                    {product.stack.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+
+                  <div className="product-actions">
+                    <button
+                      className="market-button"
+                      type="button"
+                      onClick={() => buyProduct(product)}
+                      disabled={paymentBusy !== null}
+                    >
+                      {paymentBusy === product.id
+                        ? 'Opening checkout…'
+                        : 'Continue to checkout ↗'}
+                    </button>
+
+                    <a
+                      className="repo-link"
+                      href={product.repository}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`View ${product.name} repository`}
+                      title="View GitHub repository"
+                    >
+                      ⌘
+                    </a>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
+
+          <div className="payment-notice">
+            <strong>Important checkout information:</strong>{' '}
+            Your existing Razorpay integration creates orders
+            using the amount configured by your payment server.
+            The individual catalogue prices displayed here are
+            not yet passed to the backend. Confirm the amount
+            displayed in Razorpay before completing payment.
+            Product-specific payment amounts will require a
+            backend update.
+          </div>
+
+          <p
+            className="payment-status"
+            role="status"
+            aria-live="polite"
+          >
+            {paymentStatus}
+          </p>
         </section>
 
-        <section className="process-section" id="process">
-          <div className="process-inner">
-            <div className="process-heading">
-              <div className="eyebrow eyebrow-light"><span className="eyebrow-line" /> A CLEAR, SIMPLE PROCESS</div>
-              <h2>From “it’s not working”<br />to <span>“that’s fixed.”</span></h2>
-              <p>No vague promises. Just a straightforward process, a clear estimate and an update on the issue you reported.</p>
-              <a href="#contact" className="button button-light">Start with your issue <Icon name="arrow-up-right" /></a>
+        <section className="market-bottom" id="about">
+          <div className="market-bottom-inner">
+            <div>
+              <h2>Have a question about a project?</h2>
+              <p>
+                Contact us for product details, compatibility
+                questions or purchase assistance.
+              </p>
             </div>
-            <div className="process-steps">
-              {steps.map((step, index) => (
-                <div className="process-step" key={step.number}>
-                  <div className="step-number">{step.number}</div>
-                  <div className="step-content"><h3>{step.title}</h3><p>{step.description}</p></div>
-                  {index < steps.length - 1 && <div className="step-connector" />}
-                </div>
-              ))}
-            </div>
-            <div className="process-decoration"><span>F</span><i /><i /><i /></div>
-          </div>
-        </section>
 
-        <section className="section pricing-section" id="pricing">
-          <div className="pricing-heading">
-            <div className="eyebrow"><span className="eyebrow-line" /> STRAIGHTFORWARD PRICING</div>
-            <h2>Start small.<br /><span>Know the cost first.</span></h2>
-            <p>Every issue is different. The starting price gives you a reference point; the exact quote is confirmed after we understand the bug.</p>
-          </div>
-          <div className="pricing-layout">
-            <div className="price-feature-card">
-              <div className="price-card-top"><span className="price-label">FLUTTER BUG FIXING</span><span className="price-badge"><Icon name="sparkles" /> STARTING PRICE</span></div>
-              <div className="price-amount"><span>₹</span>999<span className="price-onwards"> onwards</span></div>
-              <p className="price-description">For a small, clearly scoped Flutter bug. Complex issues are estimated separately after review.</p>
-              <div className="price-divider" />
-              <div className="price-includes-title">A clear start, with:</div>
-              <ul className="price-list">
-                <li><Icon name="check" /> Initial issue review</li>
-                <li><Icon name="check" /> Scope and estimate before work</li>
-                <li><Icon name="check" /> Focused work on the agreed issue</li>
-                <li><Icon name="check" /> Update on the fix and verification</li>
-              </ul>
-              <button type="button" className="button button-primary price-button" onClick={startPayment} disabled={paymentBusy}>
-                {paymentBusy ? 'Connecting to Razorpay…' : 'Pay ₹999 securely'} <Icon name="arrow-up-right" />
-              </button>
-              <p className="payment-status" role="status" aria-live="polite">{paymentStatus}</p>
-              <small className="price-footnote">No work begins until you approve the estimate.</small>
-            </div>
-            <div className="pricing-side">
-              <div className="pricing-side-card">
-                <span className="side-card-icon"><Icon name="code" /></span>
-                <div><h3>Multiple screens or feature flows?</h3><p>We’ll review the affected screens and dependencies, then provide a scoped estimate.</p></div>
-                <span className="side-card-arrow"><Icon name="arrow-up-right" /></span>
-              </div>
-              <div className="pricing-side-card">
-                <span className="side-card-icon side-card-icon-orange"><Icon name="terminal" /></span>
-                <div><h3>Build, release or deep debugging?</h3><p>Platform setup, native configuration and complex root-cause work may need a separate quote.</p></div>
-                <span className="side-card-arrow"><Icon name="arrow-up-right" /></span>
-              </div>
-              <div className="quote-note"><span className="quote-note-icon"><Icon name="shield" /></span><p><strong>Your approval comes first.</strong><br />We’ll explain the proposed scope and cost before starting any paid work.</p></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="faq-section" id="faq">
-          <div className="faq-inner">
-            <div className="faq-heading">
-              <div className="eyebrow"><span className="eyebrow-line" /> GOOD TO KNOW</div>
-              <h2>Questions before<br /><span>you get started?</span></h2>
-              <p>Here are a few things people usually want to know before sharing a Flutter issue.</p>
-              <a href="#contact" className="text-link">Still have a question? <Icon name="arrow-right" /></a>
-            </div>
-            <div className="faq-list">
-              {faqs.map((faq, index) => {
-                const isOpen = openFaq === index;
-                return (
-                  <article className={`faq-item ${isOpen ? 'faq-open' : ''}`} key={faq.question}>
-                    <button
-                      type="button"
-                      className="faq-question"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenFaq(isOpen ? null : index)}
-                    >
-                      <span>{faq.question}</span>
-                      <span className="faq-toggle"><Icon name={isOpen ? 'minus' : 'plus'} /></span>
-                    </button>
-                    {isOpen && <div className="faq-answer"><p>{faq.answer}</p></div>}
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="contact-section" id="contact">
-          <div className="contact-grid" />
-          <div className="contact-copy">
-            <div className="eyebrow eyebrow-light"><span className="eyebrow-line" /> LET’S LOOK AT THE ISSUE</div>
-            <h2>One bug at a time.<br /><span>One step closer.</span></h2>
-            <p>Tell us what’s happening in your Flutter app. Share enough detail for an initial review and we’ll help you figure out the next step.</p>
-            <div className="contact-points">
-              <div><span><Icon name="check" /></span> No obligation to proceed</div>
-              <div><span><Icon name="check" /></span> Scope and quote before paid work</div>
-              <div><span><Icon name="check" /></span> Never share passwords or secret keys</div>
-            </div>
-            <div className="contact-price-note"><strong>₹999+</strong><span>Starting price for small bug fixes</span></div>
-          </div>
-
-          <div className="contact-form-card">
-            <div className="form-heading"><span className="form-heading-icon"><Icon name="message" /></span><div><h3>Tell us about your bug</h3><p>Share the details and request an estimate.</p></div></div>
-            <form className="contact-form" onSubmit={handleSubmit}>
-              <div className="form-row">
-                <label>Your name<input name="name" type="text" placeholder="e.g. Alex Thomas" autoComplete="name" required maxLength={80} /></label>
-                <label>Email address<input name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength={120} /></label>
-              </div>
-              <label>What do you need help with?
-                <select name="issueType" defaultValue="" required>
-                  <option value="" disabled>Select an issue type</option>
-                  <option>App crash or runtime error</option>
-                  <option>UI or layout issue</option>
-                  <option>API or Firebase integration</option>
-                  <option>Android or iOS build issue</option>
-                  <option>Performance issue</option>
-                  <option>Other Flutter issue</option>
-                </select>
-              </label>
-              <label>Describe the issue<textarea name="details" rows={4} placeholder="What happens, what did you expect, and when does it happen?" required minLength={12} maxLength={1500} /></label>
-              <button className="button button-primary form-submit" type="submit">Prepare my enquiry <Icon name="send" /></button>
-              <p className="form-privacy">Please don’t include passwords, API keys, private certificates or real customer data.</p>
-            </form>
-            {formStatus && (
-              <div className="form-result" role="status" aria-live="polite">
-                <div className="form-result-title"><Icon name="check" /> Enquiry prepared</div>
-                <p>{formStatus}</p>
-                {draftMessage && (
-                  <>
-                    <textarea className="message-preview" aria-label="Prepared enquiry message" readOnly value={draftMessage} rows={8} />
-                    <button className="copy-button" type="button" onClick={copyMessage}><Icon name="copy" /> {copied ? 'Copied' : 'Copy enquiry message'}</button>
-                  </>
-                )}
-              </div>
-            )}
+            <a
+              className="market-button"
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Chat on WhatsApp ↗
+            </a>
           </div>
         </section>
       </main>
 
-      <footer className="site-footer">
-        <a className="brand footer-brand" href="#top">
-          <span className="brand-mark"><span>F</span><i /></span>
-          <span className="brand-copy"><strong>{siteConfig.brandName}</strong><small>FLUTTER APP SUPPORT</small></span>
-        </a>
-        <p>Thoughtful debugging for Flutter apps.</p>
-        <div className="footer-right"><span>Flutter bug fixing from ₹999</span><a href="#top" aria-label="Back to top">Back to top ↑</a></div>
-        <div className="footer-bottom"><span>© {new Date().getFullYear()} {siteConfig.brandName}. All rights reserved.</span><span>Built for better app days.</span></div>
+      <footer className="market-footer">
+        <span>
+          © {new Date().getFullYear()} {siteConfig.brandName}.
+          All rights reserved.
+        </span>
+
+        <span>
+          Digital source code products ·{' '}
+          <a href="#products">Browse collection ↑</a>
+        </span>
       </footer>
     </div>
   );
