@@ -59,3 +59,4 @@ You should also replace the placeholder brand name with your own business name i
 - SEO title, description, Open Graph metadata and favicon
 - Accessibility labels, reduced-motion support and keyboard-friendly controls
 # talkzo
+# talkzo
