@@ -1,24 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { siteConfig } from './config';
-
-type RazorpayResult = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
-type RazorpayOptions = {
-  key: string; amount: number; currency: string; name: string; description: string; order_id: string;
-  handler: (result: RazorpayResult) => void; modal: { ondismiss: () => void };
-  theme: { color: string };
-};
-declare global { interface Window { Razorpay?: new (options: RazorpayOptions) => { open: () => void } } }
-
-const paymentApiBase = (import.meta.env.VITE_RAZORPAY_API_URL || '').replace(/\/$/, '');
-const razorpayPaymentLink = (import.meta.env.VITE_RAZORPAY_PAYMENT_LINK || '').trim();
-
-async function readPaymentJson<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    throw new Error('The payment API returned a web page instead of payment data. GitHub Pages cannot run the Razorpay API; configure a Razorpay Payment Link or a hosted API URL.');
-  }
-  return response.json() as Promise<T>;
-}
+import { startRazorpayCheckout } from './services/razorpayService';
 
 type IconName =
   | 'arrow-up-right'
@@ -228,56 +210,13 @@ function App() {
     setPaymentBusy(true);
     setPaymentStatus('');
     try {
-      if (razorpayPaymentLink) {
-        const link = new URL(razorpayPaymentLink);
-        if (link.protocol !== 'https:') throw new Error('The configured Razorpay Payment Link must use HTTPS.');
-        window.location.assign(link.toString());
-        return;
-      }
-      if (import.meta.env.PROD && !paymentApiBase) {
-        throw new Error('Razorpay is not connected on this GitHub Pages site. Add VITE_RAZORPAY_PAYMENT_LINK from your Razorpay Dashboard, then rebuild and redeploy.');
-      }
-      const loadCheckout = () => new Promise<void>((resolve, reject) => {
-        if (window.Razorpay) return resolve();
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Razorpay checkout could not be loaded. Check your connection and try again.'));
-        document.body.appendChild(script);
-      });
-      await loadCheckout();
-      const orderResponse = await fetch(`${paymentApiBase}/api/razorpay/create-order`, { method: 'POST' });
-      const order = await readPaymentJson<{ orderId?: string; amount?: number; currency?: string; keyId?: string; error?: string }>(orderResponse);
-      if (!orderResponse.ok || !order.orderId || !order.keyId || !order.amount || !order.currency) {
-        throw new Error(order.error || 'Could not start checkout. Confirm Razorpay server credentials are configured.');
-      }
-      const checkout = new window.Razorpay!({
-        key: order.keyId,
-        amount: order.amount,
-        currency: order.currency,
-        name: siteConfig.brandName,
-        description: 'Flutter bug fixing — starting payment',
-        order_id: order.orderId,
-        theme: { color: '#1f755d' },
-        modal: { ondismiss: () => setPaymentBusy(false) },
-        handler: async (result) => {
-          try {
-            const verifyResponse = await fetch(`${paymentApiBase}/api/razorpay/verify-payment`, {
-              method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(result),
-            });
-            const verification = await readPaymentJson<{ verified?: boolean; error?: string }>(verifyResponse);
-            if (!verifyResponse.ok || !verification.verified) throw new Error(verification.error || 'Payment verification failed. Contact support before retrying.');
-            setPaymentStatus(`Payment verified. Reference: ${result.razorpay_payment_id}`);
-          } catch (error) {
-            setPaymentStatus(error instanceof Error ? error.message : 'Could not verify payment. Contact support with your payment reference.');
-          } finally {
-            setPaymentBusy(false);
-          }
-        },
-      });
-      checkout.open();
+      const outcome = await startRazorpayCheckout(siteConfig.brandName);
+      if (outcome.status === 'success') setPaymentStatus(`Payment verified. Reference: ${outcome.paymentId}`);
+      if (outcome.status === 'failure') setPaymentStatus(`Payment failed: ${outcome.message}`);
+      if (outcome.status === 'cancelled') setPaymentStatus('Payment cancelled. No payment was completed.');
     } catch (error) {
       setPaymentStatus(error instanceof Error ? error.message : 'Could not start payment. Please try again.');
+    } finally {
       setPaymentBusy(false);
     }
   }
