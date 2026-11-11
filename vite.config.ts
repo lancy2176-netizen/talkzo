@@ -74,6 +74,8 @@ function razorpayApi(env: Record<string, string | undefined>): Plugin {
 export default defineConfig(({ mode }) => {
   const env = { ...process.env, ...loadEnv(mode, process.cwd(), '') }
   return {
+    // GitHub Pages serves this repository from /talkzo/, not the domain root.
+    base: mode === 'production' ? '/talkzo/' : '/',
     plugins: [react(), razorpayApi(env)],
   }
 })
