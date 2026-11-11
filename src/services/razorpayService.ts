@@ -1,3 +1,5 @@
+import { firebaseConfig } from '../firebase';
+
 type PaymentResponse = {
   razorpay_order_id: string;
   razorpay_payment_id: string;
@@ -46,6 +48,11 @@ export type PaymentOutcome =
   | { status: 'cancelled' };
 
 const apiBase = (import.meta.env.VITE_RAZORPAY_API_URL || '').replace(/\/$/, '');
+const firebaseFunctionsBase = `https://asia-south1-${firebaseConfig.projectId}.cloudfunctions.net`;
+const createOrderUrl = import.meta.env.VITE_RAZORPAY_CREATE_ORDER_URL
+  || (apiBase ? `${apiBase}/api/razorpay/create-order` : import.meta.env.PROD ? `${firebaseFunctionsBase}/createRazorpayOrderWebTemp` : '/api/razorpay/create-order');
+const verifyPaymentUrl = import.meta.env.VITE_RAZORPAY_VERIFY_PAYMENT_URL
+  || (apiBase ? `${apiBase}/api/razorpay/verify-payment` : import.meta.env.PROD ? `${firebaseFunctionsBase}/verifyRazorpayPaymentWebTemp` : '/api/razorpay/verify-payment');
 
 async function readJson<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type') || '';
@@ -78,11 +85,7 @@ async function loadCheckout(): Promise<void> {
 }
 
 async function createOrder(): Promise<Required<Pick<RazorpayOrder, 'orderId' | 'amount' | 'currency' | 'keyId'>>> {
-  if (import.meta.env.PROD && !apiBase) {
-    throw new Error('Standard Checkout needs a server API URL. GitHub Pages cannot create Razorpay orders by itself.');
-  }
-
-  const response = await fetch(`${apiBase}/api/razorpay/create-order`, { method: 'POST' });
+  const response = await fetch(createOrderUrl, { method: 'POST' });
   const order = await readJson<RazorpayOrder>(response);
   if (!response.ok || !order.orderId || !order.amount || !order.currency || !order.keyId) {
     throw new Error(order.error || 'The server could not create a Razorpay order.');
@@ -91,7 +94,7 @@ async function createOrder(): Promise<Required<Pick<RazorpayOrder, 'orderId' | '
 }
 
 async function verifyPayment(payment: PaymentResponse): Promise<void> {
-  const response = await fetch(`${apiBase}/api/razorpay/verify-payment`, {
+  const response = await fetch(verifyPaymentUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payment),
@@ -146,3 +149,4 @@ export async function startRazorpayCheckout(brandName: string): Promise<PaymentO
     checkout.open();
   });
 }
+
